@@ -39,13 +39,17 @@
             <span>#자동전투전략</span>
             <span>#내부운영</span>
           </div>
+          <div class="quick-pages">
+            <a href="game_hud.html" target="_blank" rel="noopener">통합 HUD 보기</a>
+            <a href="전함_외부.html" target="_blank" rel="noopener">외부 전투 UI 보기</a>
+          </div>
         </div>
         <article id="doc" class="document"></article>
       </section>
     </main>
 
     <script>
-      const markdownPath = encodeURI('우주전함_샌드박스_시뮬레이션_기획_요약.md');
+      const markdownPath = `${encodeURI('우주전함_샌드박스_시뮬레이션_기획_요약.md')}?v=${Date.now()}`;
 
       const inline = (text) =>
         text
@@ -192,7 +196,7 @@
         tocEl.appendChild(frag);
       }
 
-      fetch(markdownPath)
+      fetch(markdownPath, { cache: 'no-store' })
         .then((res) => res.text())
         .then((md) => {
           const doc = document.getElementById('doc');
@@ -201,7 +205,7 @@
         })
         .catch(() => {
           document.getElementById('doc').innerHTML =
-            '<p class="error">문서를 불러오지 못했습니다. 로컬 서버 환경에서 실행해주세요.</p>';
+            '<p class="error">문서를 불러오지 못했습니다. 새로고침(Ctrl+F5) 또는 로컬 서버 실행 상태를 확인해주세요.</p>';
         });
     </script>
   </body>
