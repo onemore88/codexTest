@@ -194,6 +194,8 @@ body {
   margin-top: 1.45em;
   margin-bottom: 0.6em;
 }
+.document h3 { font-size: 1.1rem; color: #dce5ff; }
+.document h4 { font-size: 1rem; color: #b7c5ff; }
 
 .document h1 { font-size: 2rem; }
 .document h2 {
