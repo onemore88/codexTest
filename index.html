@@ -28,16 +28,20 @@
 
       <section class="content-wrap">
         <div class="hero-card">
-          <h1>우주전함_샌드박스_시뮬레이션_기획_요약</h1>
+          <h1>우주전함 기획 문서 라이브러리</h1>
           <p>
-            마크다운 원문을 기반으로 한 비주얼 기획서 라이브러리 페이지입니다. 핵심 방향,
-            팩션, 전투 루프, 스탯/공식 설계를 한 화면에서 탐색할 수 있습니다.
+            게임소개 문서와 시스템기획 문서를 분리해 관리하는 라이브러리 페이지입니다.
+            소개/컨셉과 실제 데이터 설계를 문서 전환으로 빠르게 오갈 수 있습니다.
           </p>
           <div class="hero-tags">
             <span>#Sandbox</span>
             <span>#우주전함</span>
             <span>#자동전투전략</span>
             <span>#내부운영</span>
+          </div>
+          <div class="doc-switch" id="docSwitch">
+            <a data-doc="intro" href="?doc=intro">게임소개 문서</a>
+            <a data-doc="system" href="?doc=system">시스템기획 문서</a>
           </div>
           <div class="quick-pages">
             <a href="game_hud.html" target="_blank" rel="noopener">통합 HUD 보기</a>
@@ -49,7 +53,12 @@
     </main>
 
     <script>
-      const markdownPath = `${encodeURI('우주전함_샌드박스_시뮬레이션_기획_요약.md')}?v=${Date.now()}`;
+      const docMap = {
+        intro: '게임소개_기획.md',
+        system: '시스템기획_데이터.md'
+      };
+      const selectedDoc = new URLSearchParams(window.location.search).get('doc') === 'system' ? 'system' : 'intro';
+      const markdownPath = `${encodeURI(docMap[selectedDoc])}?v=${Date.now()}`;
 
       const inline = (text) =>
         text
@@ -65,7 +74,8 @@
           .replace(/-+/g, '-');
 
       function parseMarkdown(md) {
-        const lines = md.split('\n');
+        const lines = md.split('
+');
         let html = '';
         let inUl = false;
         let inOl = false;
@@ -194,6 +204,13 @@
 
         tocEl.innerHTML = '';
         tocEl.appendChild(frag);
+      }
+
+      const switchEl = document.getElementById('docSwitch');
+      if (switchEl) {
+        switchEl.querySelectorAll('a').forEach((a) => {
+          if (a.dataset.doc === selectedDoc) a.classList.add('active');
+        });
       }
 
       fetch(markdownPath, { cache: 'no-store' })

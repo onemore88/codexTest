@@ -141,6 +141,30 @@ body {
   font-size: 0.8rem;
 }
 
+.doc-switch {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.doc-switch a {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #2e3970;
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: #d9f4ff;
+  background: rgba(97, 218, 251, 0.07);
+  font-size: 0.82rem;
+}
+
+.doc-switch a.active {
+  border-color: #7ce9ff;
+  background: rgba(97, 218, 251, 0.22);
+  color: #ffffff;
+}
+
 .quick-pages {
   margin-top: 12px;
   display: flex;
@@ -170,6 +194,8 @@ body {
   margin-top: 1.45em;
   margin-bottom: 0.6em;
 }
+.document h3 { font-size: 1.1rem; color: #dce5ff; }
+.document h4 { font-size: 1rem; color: #b7c5ff; }
 
 .document h1 { font-size: 2rem; }
 .document h2 {
@@ -186,8 +212,6 @@ body {
   color: #d5defd;
   line-height: 1.65;
 }
-.document h3 { font-size: 1.1rem; color: #dce5ff; }
-.document h4 { font-size: 1rem; color: #b7c5ff; }
 
 .document ul,
 .document ol {
