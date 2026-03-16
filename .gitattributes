@@ -1,0 +1,5 @@
+# Auto-merge policy for design/UI docs to reduce PR conflict prompts.
+# `union` keeps both sides instead of stopping with a conflict marker.
+*.html merge=union
+*.css  merge=union
+*.md   merge=union
