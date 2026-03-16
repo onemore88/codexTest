@@ -74,8 +74,7 @@
           .replace(/-+/g, '-');
 
       function parseMarkdown(md) {
-        const lines = md.split('
-');
+        const lines = md.split('\n');
         let html = '';
         let inUl = false;
         let inOl = false;
