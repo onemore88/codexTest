@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>전함 외부 전투 화면</title>
+    <style>
+      :root {
+        --bg: #05070f;
+        --hud-bg: rgba(8, 14, 30, 0.78);
+        --line: #2f437a;
+        --hp: #ff6f8d;
+        --shield: #60d9ff;
+        --text: #e9f0ff;
+        --muted: #a9b8df;
+        --accent: #66dbff;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+      body {
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+        background: radial-gradient(circle at 50% 50%, #111937 0%, #070b17 45%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .space {
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 10% 20%, rgba(255,255,255,0.7) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 72% 38%, rgba(255,255,255,0.5) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 35% 75%, rgba(255,255,255,0.55) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 88% 68%, rgba(255,255,255,0.6) 0 1px, transparent 1.5px);
+        background-size: 220px 220px, 320px 320px, 260px 260px, 300px 300px;
+        animation: drift 80s linear infinite;
+      }
+
+      @keyframes drift {
+        from { transform: translateY(0); }
+        to { transform: translateY(160px); }
+      }
+
+      .ship {
+        position: absolute;
+        left: 50%;
+        top: 54%;
+        width: 120px;
+        height: 56px;
+        transform: translate(-50%, -50%);
+        border: 1px solid #7cdfff;
+        background: linear-gradient(135deg, rgba(124,223,255,.32), rgba(124,223,255,.08));
+        border-radius: 50% 50% 42% 42%;
+        box-shadow: 0 0 28px rgba(96, 217, 255, 0.35);
+      }
+      .ship::before,
+      .ship::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 18px;
+        height: 8px;
+        border-radius: 8px;
+        background: rgba(111, 216, 255, 0.8);
+        transform: translateY(-50%);
+      }
+      .ship::before { left: -14px; }
+      .ship::after { right: -14px; }
+
+      .reticle {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 180px;
+        height: 180px;
+        transform: translate(-50%, -50%);
+        border: 1px dashed rgba(126,232,255,.35);
+        border-radius: 50%;
+      }
+
+      .hud { position: fixed; inset: 0; pointer-events: none; }
+
+      .status {
+        position: absolute;
+        left: 24px;
+        bottom: 20px;
+        width: min(420px, 42vw);
+        background: var(--hud-bg);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        backdrop-filter: blur(6px);
+      }
+
+      .label {
+        display: flex;
+        justify-content: space-between;
+        font-size: .84rem;
+        margin-bottom: 6px;
+        opacity: .95;
+      }
+
+      .bar {
+        width: 100%;
+        height: 12px;
+        border-radius: 999px;
+        border: 1px solid #35508f;
+        overflow: hidden;
+        background: rgba(255,255,255,0.06);
+        margin-bottom: 10px;
+      }
+
+      .fill { height: 100%; border-radius: 999px; }
+      .fill.hp { width: 74%; background: linear-gradient(90deg, #ff5f84, #ff8fa6); }
+      .fill.shield { width: 41%; background: linear-gradient(90deg, #4ed3ff, #7ee8ff); }
+
+      .commands {
+        position: absolute;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        width: min(520px, 42vw);
+        background: var(--hud-bg);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        backdrop-filter: blur(6px);
+        pointer-events: auto;
+      }
+
+      .commands-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: .78rem;
+        color: var(--muted);
+      }
+
+      .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+      .cmd-btn {
+        border: 1px solid #3b579c;
+        background: rgba(102, 219, 255, .10);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: .82rem;
+        cursor: pointer;
+      }
+      .cmd-btn:hover { border-color: var(--accent); background: rgba(102, 219, 255, .18); }
+
+      .mini {
+        position: absolute;
+        right: 24px;
+        bottom: 20px;
+        width: 220px;
+        height: 220px;
+        border-radius: 12px;
+        background: var(--hud-bg);
+        border: 1px solid var(--line);
+        backdrop-filter: blur(6px);
+        overflow: hidden;
+      }
+
+      .mini h4 {
+        margin: 0;
+        padding: 8px 10px;
+        font-size: .8rem;
+        letter-spacing: .04em;
+        border-bottom: 1px solid #314777;
+        background: rgba(0,0,0,.2);
+      }
+
+      .mini-map {
+        position: relative;
+        width: 100%;
+        height: calc(100% - 33px);
+        background:
+          linear-gradient(transparent 95%, rgba(124,223,255,.18) 100%),
+          linear-gradient(90deg, transparent 95%, rgba(124,223,255,.18) 100%),
+          radial-gradient(circle at 50% 50%, #0f1734 0%, #0b1228 60%, #070b17 100%);
+        background-size: 32px 32px, 32px 32px, auto;
+      }
+
+      .dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
+      .dot.player { background: #7ee8ff; box-shadow: 0 0 8px rgba(126,232,255,.9); left: 49%; top: 52%; }
+      .dot.enemy { background: #ff7f9e; }
+      .dot.enemy.e1 { left: 67%; top: 34%; }
+      .dot.enemy.e2 { left: 74%; top: 66%; }
+      .dot.enemy.e3 { left: 28%; top: 23%; }
+
+      .enter-internal {
+        position: absolute;
+        right: 24px;
+        top: 24px;
+        background: var(--hud-bg);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        width: 220px;
+        pointer-events: auto;
+      }
+      .enter-internal h5 { margin: 0 0 8px; font-size: .85rem; color: var(--muted); }
+      .enter-btn {
+        width: 100%;
+        border: 1px solid var(--accent);
+        background: rgba(102, 219, 255, .18);
+        color: #eafcff;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .enter-btn:hover { background: rgba(102, 219, 255, .28); }
+      .hint { margin-top: 8px; font-size: .76rem; color: var(--muted); }
+
+      @media (max-width: 1200px) {
+        .commands { width: min(520px, 52vw); }
+      }
+
+      @media (max-width: 900px) {
+        .status { width: calc(100vw - 48px); bottom: 200px; }
+        .commands { left: 24px; right: 24px; transform: none; width: auto; }
+        .mini { width: 170px; height: 170px; }
+        .enter-internal { width: 180px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="space"></div>
+    <div class="ship" aria-label="아군 전함"></div>
+    <div class="reticle"></div>
+
+    <div class="hud">
+      <section class="enter-internal" aria-label="내부 진입">
+        <h5>INTERNAL ACCESS</h5>
+        <button class="enter-btn">내부 운용 화면 진입 (TAB)</button>
+        <div class="hint">화재·부상·고장 발생 시 즉시 전환 권장</div>
+      </section>
+
+      <section class="status" aria-label="전함 상태 HUD">
+        <div class="label"><span>선체 내구도</span><strong>74%</strong></div>
+        <div class="bar"><div class="fill hp"></div></div>
+
+        <div class="label"><span>방어막</span><strong>41%</strong></div>
+        <div class="bar"><div class="fill shield"></div></div>
+      </section>
+
+      <section class="commands" aria-label="기본 명령 인터페이스">
+        <div class="commands-head">
+          <span>BASIC COMMAND</span>
+          <span>자동전투 중 · 개입 가능</span>
+        </div>
+        <div class="btn-row">
+          <button class="cmd-btn">거리 유지</button>
+          <button class="cmd-btn">집중 사격</button>
+          <button class="cmd-btn">긴급 회피</button>
+          <button class="cmd-btn">함재기 출격</button>
+          <button class="cmd-btn">함재기 귀환</button>
+        </div>
+      </section>
+
+      <section class="mini" aria-label="미니맵">
+        <h4>TACTICAL MINIMAP</h4>
+        <div class="mini-map">
+          <span class="dot player" title="아군 기함"></span>
+          <span class="dot enemy e1" title="적 순양함"></span>
+          <span class="dot enemy e2" title="적 호위함"></span>
+          <span class="dot enemy e3" title="적 요격편대"></span>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
