@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>우주전함 HUD 인터페이스 목업</title>
+    <style>
+      :root {
+        --bg: #070b16;
+        --panel: rgba(14, 22, 46, 0.88);
+        --line: #2b3b73;
+        --text: #ebf1ff;
+        --muted: #9db0e6;
+        --accent: #58d0ff;
+        --warn: #ffbf69;
+        --danger: #ff6c8a;
+        --ok: #7bffbf;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 15%, #182750 0%, transparent 30%),
+          radial-gradient(circle at 85% 20%, #1f2f63 0%, transparent 28%),
+          var(--bg);
+      }
+
+      .hud {
+        display: grid;
+        grid-template-rows: 72px 1fr 92px;
+        height: 100vh;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 280px 1fr 320px;
+        align-items: center;
+        padding: 10px 14px;
+        gap: 10px;
+      }
+
+      .ship-id strong { font-size: 1rem; display: block; }
+      .ship-id span { color: var(--muted); font-size: .84rem; }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0,1fr));
+        gap: 10px;
+      }
+      .metric {
+        border: 1px solid #30437f;
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: rgba(0,0,0,.22);
+      }
+      .metric b { display: block; font-size: .78rem; color: var(--muted); }
+      .metric span { font-size: 1rem; font-weight: 700; }
+
+      .mode-switch {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .mode-switch button {
+        border: 1px solid #365198;
+        color: var(--text);
+        background: rgba(88, 208, 255, .08);
+        padding: 8px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .mode-switch button.active {
+        border-color: var(--accent);
+        background: rgba(88, 208, 255, .22);
+        color: #dffdff;
+      }
+
+      .main {
+        display: grid;
+        grid-template-columns: 300px minmax(0,1fr) 320px;
+        gap: 12px;
+        min-height: 0;
+      }
+
+      .column { padding: 12px; overflow: auto; }
+      h3 { margin: 0 0 10px; font-size: .95rem; color: #c4d4ff; }
+
+      .card {
+        border: 1px solid #30437f;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: rgba(0,0,0,.2);
+      }
+      .card .title { font-weight: 700; margin-bottom: 6px; }
+      .card small { color: var(--muted); }
+
+      .battlefield {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        border: 1px solid #2f437f;
+        min-height: 420px;
+        background:
+          linear-gradient(transparent 97%, rgba(130,160,255,.18) 100%),
+          linear-gradient(90deg, transparent 97%, rgba(130,160,255,.18) 100%),
+          radial-gradient(circle at 50% 55%, #0f1736 0%, #0a1025 55%, #070b16 100%);
+        background-size: 42px 42px, 42px 42px, auto;
+      }
+      .ship {
+        position: absolute;
+        border: 1px solid #7ad8ff;
+        background: rgba(122, 216, 255, .18);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: .8rem;
+      }
+      .ship.enemy {
+        border-color: #ff8ba1;
+        background: rgba(255, 139, 161, .2);
+      }
+      .ring {
+        position: absolute;
+        border: 1px dashed rgba(88, 208, 255, .35);
+        border-radius: 50%;
+      }
+      .tag {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border: 1px solid #365198;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0,0,0,.3);
+        font-size: .78rem;
+      }
+
+      .event {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #30437f;
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        background: rgba(0,0,0,.25);
+      }
+      .event .level.warn { color: var(--warn); }
+      .event .level.danger { color: var(--danger); }
+      .event .level.ok { color: var(--ok); }
+
+      .bottombar {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr 1.1fr;
+        gap: 10px;
+        padding: 10px;
+        align-items: stretch;
+      }
+      .command-group {
+        border: 1px solid #30437f;
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(0,0,0,.22);
+      }
+      .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .buttons button {
+        border: 1px solid #3a569f;
+        background: rgba(88, 208, 255, .1);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 7px 10px;
+        cursor: pointer;
+      }
+
+      .note { color: var(--muted); font-size: .84rem; margin-top: 8px; }
+
+      @media (max-width: 1200px) {
+        .topbar { grid-template-columns: 1fr; gap: 8px; }
+        .main { grid-template-columns: 1fr; }
+        .bottombar { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hud">
+      <header class="topbar panel">
+        <div class="ship-id">
+          <strong>지구연방 제7기동전함 · EFS Aegis-01</strong>
+          <span>실시간 통합 시뮬레이션 HUD / 내부·외부 즉시 전환</span>
+        </div>
+        <div class="status-grid">
+          <div class="metric"><b>선체</b><span>78%</span></div>
+          <div class="metric"><b>방어막</b><span>42%</span></div>
+          <div class="metric"><b>전력</b><span>+18MW</span></div>
+          <div class="metric"><b>열/부하</b><span>71%</span></div>
+          <div class="metric"><b>보급</b><span>63%</span></div>
+        </div>
+        <div class="mode-switch">
+          <button class="active" data-mode="tactical">전술(외부)</button>
+          <button data-mode="operations">운용(내부)</button>
+          <button data-mode="command">지휘(오버레이)</button>
+        </div>
+      </header>
+
+      <section class="main">
+        <aside class="column panel">
+          <h3>목표 / 항로 / 함재기</h3>
+          <div class="card">
+            <div class="title">주 목표</div>
+            <small>적 순양전함 1척 무력화 후 전장 통제</small>
+          </div>
+          <div class="card">
+            <div class="title">항로</div>
+            <small>소행성 지대 우회 → 사거리 4,800 진입</small>
+          </div>
+          <div class="card">
+            <div class="title">함재기 상태</div>
+            <small>요격 Mk-II 2개 편대 출격 / 돌파형 폭격기 대기</small>
+          </div>
+          <div class="card">
+            <div class="title">자동화 규칙</div>
+            <small>손상복구: 반자동 / 의료: 반자동 / 보안: 자동</small>
+          </div>
+        </aside>
+
+        <main class="column panel">
+          <h3 id="view-title">전술 모드 - 외부 전장</h3>
+          <div class="battlefield" id="battlefield">
+            <div class="tag" id="view-tag">외부 카메라</div>
+            <div class="ring" style="width:340px;height:340px;left:220px;top:130px"></div>
+            <div class="ring" style="width:230px;height:230px;left:275px;top:185px"></div>
+            <div class="ship" style="left:330px;top:250px">아군 기함</div>
+            <div class="ship enemy" style="left:590px;top:190px">적 순양전함</div>
+            <div class="ship enemy" style="left:670px;top:320px">적 호위함</div>
+          </div>
+          <p class="note" id="view-note">
+            자동전투 진행 중. 목표 우선순위/함재기/내부 대응만 실시간 개입.
+          </p>
+        </main>
+
+        <aside class="column panel">
+          <h3>내부 사건 큐</h3>
+          <div class="event"><span>좌현 정비구역 화재</span><b class="level danger">위험</b></div>
+          <div class="event"><span>파일럿 1명 중상</span><b class="level warn">주의</b></div>
+          <div class="event"><span>전술 센서 잡음 증가</span><b class="level warn">주의</b></div>
+          <div class="event"><span>보안 격실 안정화</span><b class="level ok">안정</b></div>
+          <div class="card">
+            <div class="title">권장 개입</div>
+            <small>운용 모드 전환 후 정비 우선순위: 동력실 → 정비구역</small>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="bottombar panel">
+        <div class="command-group">
+          <strong>전술 명령</strong>
+          <div class="buttons">
+            <button>거리 유지</button>
+            <button>집중 포격</button>
+            <button>좌현 선회</button>
+            <button>긴급 이탈</button>
+          </div>
+        </div>
+        <div class="command-group">
+          <strong>내부 지시</strong>
+          <div class="buttons">
+            <button>수리 우선: 동력실</button>
+            <button>의무팀 집결</button>
+            <button>화재 격벽 봉쇄</button>
+          </div>
+        </div>
+        <div class="command-group">
+          <strong>시간/자동화</strong>
+          <div class="buttons">
+            <button>1.0x</button>
+            <button>0.5x</button>
+            <button>0.2x</button>
+            <button>명령 큐</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const modeButtons = document.querySelectorAll('.mode-switch button');
+      const viewTitle = document.getElementById('view-title');
+      const viewTag = document.getElementById('view-tag');
+      const viewNote = document.getElementById('view-note');
+      const battlefield = document.getElementById('battlefield');
+
+      const modeMap = {
+        tactical: {
+          title: '전술 모드 - 외부 전장',
+          tag: '외부 카메라',
+          note: '자동전투 진행 중. 목표 우선순위/함재기/내부 대응만 실시간 개입.',
+          bg: 'radial-gradient(circle at 50% 55%, #0f1736 0%, #0a1025 55%, #070b16 100%)'
+        },
+        operations: {
+          title: '운용 모드 - 함내 구역',
+          tag: '내부 카메라',
+          note: '정비·치료·보안 우선순위를 조정하면 외부 전투 성능에 즉시 반영됩니다.',
+          bg: 'radial-gradient(circle at 40% 45%, #18212f 0%, #101827 55%, #070b16 100%)'
+        },
+        command: {
+          title: '지휘 모드 - 통합 오버레이',
+          tag: '지휘 오버레이',
+          note: '전장/내부 데이터를 한 번에 확인하고 자동화 규칙 및 경보 대응 정책을 조정합니다.',
+          bg: 'radial-gradient(circle at 50% 45%, #1f1837 0%, #151027 55%, #070b16 100%)'
+        }
+      };
+
+      modeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          modeButtons.forEach((b) => b.classList.remove('active'));
+          button.classList.add('active');
+          const mode = modeMap[button.dataset.mode];
+          viewTitle.textContent = mode.title;
+          viewTag.textContent = mode.tag;
+          viewNote.textContent = mode.note;
+          battlefield.style.backgroundImage =
+            'linear-gradient(transparent 97%, rgba(130,160,255,.18) 100%),' +
+            'linear-gradient(90deg, transparent 97%, rgba(130,160,255,.18) 100%),' +
+            mode.bg;
+        });
+      });
+    </script>
+  </body>
+</html>
